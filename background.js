@@ -11,8 +11,22 @@ chrome.storage.local.get('items', (data) => {
 // Function to extract the price using a content script
 async function fetchPrice(url) {
   try {
-    // Open the tau-trade product page in a new tab
-    const tab = await chrome.tabs.create({ url, active: false });
+    // Find the window where YouTube is open
+    const windows = await chrome.windows.getAll({ populate: true });
+    const targetWindow = windows.find(win =>
+      win.tabs.some(tab => tab.url && tab.url.includes('youtube.com'))
+    );
+
+    if (!targetWindow) {
+      throw new Error('Target window not found. Ensure YouTube is open in the desired instance.');
+    }
+
+    // Open the tau-trade product page in the target window
+    const tab = await chrome.tabs.create({ 
+      windowId: targetWindow.id, 
+      url, 
+      active: false 
+    });
 
     // Wait for the page to load
     await new Promise((resolve) => {
@@ -28,7 +42,7 @@ async function fetchPrice(url) {
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
-        const priceElement = document.querySelector('.price'); // Use the correct selector
+        const priceElement = document.querySelector('.price'); // Use correct selector
         return priceElement ? priceElement.innerText.trim() : null;
       },
     });
