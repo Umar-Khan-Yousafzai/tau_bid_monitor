@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tau-Trade Monitor</title>
+  <!-- Local Bootstrap CSS -->
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 10px; }
+    .item { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    input { width: 300px; margin-bottom: 10px; padding: 5px; }
+    button { margin-right: 5px; padding: 5px 10px; cursor: pointer; }
+    .show-history { background-color: #4CAF50; color: white; border: none; }
+    .pause-item { background-color: #ff9800; color: white; border: none; }
+    .delete-item { background-color: #f44336; color: white; border: none; }
+  </style>
+</head>
+<body>
+  <h1>Monitored Items</h1>
+  <input type="text" id="urlInput" placeholder="Enter product URL">
+  <button id="addButton" class="btn btn-primary">Add Item</button>
+  <div id="items"></div>
+
+  <!-- Modal for displaying price history -->
+  <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="historyModalLabel">Price History</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Rows will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local Bootstrap JS -->
+  <script src="bootstrap.bundle.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
