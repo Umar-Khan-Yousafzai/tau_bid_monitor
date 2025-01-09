@@ -5,44 +5,109 @@
   <!-- Local Bootstrap CSS -->
   <link href="bootstrap.min.css" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 10px; }
-    .item { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-    input { width: 300px; margin-bottom: 10px; padding: 5px; }
-    button { margin-right: 5px; padding: 5px 10px; cursor: pointer; }
-    .show-history { background-color: #4CAF50; color: white; border: none; }
-    .pause-item { background-color: #ff9800; color: white; border: none; }
-    .delete-item { background-color: #f44336; color: white; border: none; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 15px;
+      min-width: 400px; /* Revert to the previous wider width */
+    }
+    .item {
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .item strong {
+      color: #333;
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+      margin-right: 5px; /* Add spacing between buttons */
+    }
+    .form-control {
+      margin-bottom: 10px;
+    }
+    .modal-content {
+      border-radius: 10px;
+    }
+    .modal-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+    }
+    .modal-title {
+      color: #333;
+    }
+    .table-striped tbody tr:nth-of-type(odd) {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    .url-link {
+      color: #0d6efd; /* Bootstrap primary color */
+      text-decoration: none;
+    }
+    .url-link:hover {
+      text-decoration: underline;
+    }
+    .button-group {
+      display: flex;
+      gap: 5px; /* Add spacing between buttons */
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>Monitored Items</h1>
-  <input type="text" id="urlInput" placeholder="Enter product URL">
-  <button id="addButton" class="btn btn-primary">Add Item</button>
-  <div id="items"></div>
+  <div class="container-fluid">
+    <h3 class="mb-3">Tau-Trade Monitor</h3>
 
-  <!-- Modal for displaying price history -->
-  <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="historyModalLabel">Price History</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody">
-              <!-- Rows will be dynamically added here -->
-            </tbody>
-          </table>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Input for adding a new URL -->
+    <div class="mb-3">
+      <input type="text" id="urlInput" class="form-control" placeholder="Enter product URL">
+      <button id="addButton" class="btn btn-primary w-100">Add Item</button>
+    </div>
+
+    <!-- Interval selection -->
+    <div class="mb-3">
+      <label for="intervalSelect" class="form-label">Check Interval:</label>
+      <div class="input-group">
+        <select id="intervalSelect" class="form-select">
+          <option value="0.166">10 seconds</option>
+          <option value="1">1 minute</option>
+          <option value="5">5 minutes</option>
+          <option value="10">10 minutes</option>
+          <option value="30">30 minutes</option>
+          <option value="60">1 hour</option>
+        </select>
+        <button id="setIntervalButton" class="btn btn-secondary btn-sm">Set</button>
+      </div>
+    </div>
+
+    <!-- List of monitored items -->
+    <div id="items" class="mb-3"></div>
+
+    <!-- Modal for displaying price history -->
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="historyModalLabel">Price History</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- Rows will be dynamically added here -->
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
         </div>
       </div>
     </div>

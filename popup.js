@@ -1,11 +1,8 @@
-
-
 // Function to format the timestamp into a user-friendly string
 function formatTimestamp(timestamp) {
   const date = new Date(timestamp);
   return date.toLocaleString(); // Converts to a readable date and time string
 }
-
 
 // Function to display the price history in a Bootstrap table
 function showHistory(url) {
@@ -55,17 +52,19 @@ function togglePauseItem(url) {
 }
 
 // Load saved items on popup open
-chrome.storage.local.get('items', (data) => {
+chrome.storage.local.get(['items', 'interval'], (data) => {
   const itemsContainer = document.getElementById('items');
   for (const [url, item] of Object.entries(data.items || {})) {
     const itemDiv = document.createElement('div');
     itemDiv.className = 'item';
     itemDiv.innerHTML = `
-      <strong>URL:</strong> ${url}<br>
+      <strong>URL:</strong> <a href="${url}" target="_blank" class="url-link">LINK TO ITEM</a><br>
       <strong>Current Price:</strong> ${item.history[item.history.length - 1]?.price || 'N/A'}<br>
-      <button data-url="${url}" class="show-history btn btn-success">Show History</button>
-      <button data-url="${url}" class="pause-item btn btn-warning">${item.paused ? 'Resume Monitoring' : 'Pause Monitoring'}</button>
-      <button data-url="${url}" class="delete-item btn btn-danger">Delete Item</button>
+      <div class="button-group">
+        <button data-url="${url}" class="show-history btn btn-success btn-sm">History</button>
+        <button data-url="${url}" class="pause-item btn btn-warning btn-sm">${item.paused ? 'Resume' : 'Pause'}</button>
+        <button data-url="${url}" class="delete-item btn btn-danger btn-sm">Delete</button>
+      </div>
     `;
     itemsContainer.appendChild(itemDiv);
   }
@@ -96,6 +95,11 @@ chrome.storage.local.get('items', (data) => {
       deleteItem(url);
     });
   });
+
+  // Set the interval select value
+  if (data.interval) {
+    document.getElementById('intervalSelect').value = data.interval;
+  }
 });
 
 // Handle adding new items
@@ -111,4 +115,18 @@ document.getElementById('addButton').addEventListener('click', () => {
       }
     });
   }
+});
+
+// Handle setting the interval
+document.getElementById('setIntervalButton').addEventListener('click', () => {
+  const interval = document.getElementById('intervalSelect').value;
+  chrome.storage.local.set({ interval }, () => {
+    chrome.runtime.sendMessage({ type: 'SET_INTERVAL', interval }, (response) => {
+      if (response && response.success) {
+        alert('Interval set successfully!');
+      } else {
+        alert('Failed to set interval.');
+      }
+    });
+  });
 });

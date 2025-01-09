@@ -1,18 +1,37 @@
 let items = {};
+let interval = 0.166; // Default interval in minutes (10 seconds)
 console.log('Service worker started.');
 
-// Load saved items on startup
-chrome.storage.local.get('items', (data) => {
+// Load saved items and interval on startup
+chrome.storage.local.get(['items', 'interval'], (data) => {
   if (data.items) {
     items = data.items;
+  }
+  if (data.interval) {
+    interval = parseFloat(data.interval);
+    setupAlarm();
   }
 });
 
 // Function to extract the price using a content script
 async function fetchPrice(url) {
   try {
-    // Open the tau-trade product page in a new tab
-    const tab = await chrome.tabs.create({ url, active: false });
+    // Find the window where YouTube is open
+    const windows = await chrome.windows.getAll({ populate: true });
+    const targetWindow = windows.find(win =>
+      win.tabs.some(tab => tab.url && tab.url.includes('youtube.com'))
+    );
+
+    if (!targetWindow) {
+      throw new Error('Target window not found. Ensure YouTube is open in the desired instance.');
+    }
+
+    // Open the tau-trade product page in the target window
+    const tab = await chrome.tabs.create({ 
+      windowId: targetWindow.id, 
+      url, 
+      active: false 
+    });
 
     // Wait for the page to load
     await new Promise((resolve) => {
@@ -28,7 +47,7 @@ async function fetchPrice(url) {
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
-        const priceElement = document.querySelector('.price'); // Use the correct selector
+        const priceElement = document.querySelector('.price'); // Use correct selector
         return priceElement ? priceElement.innerText.trim() : null;
       },
     });
@@ -60,7 +79,12 @@ async function monitorProduct(url) {
 }
 
 // Set up periodic monitoring
-chrome.alarms.create('monitorPrices', { periodInMinutes: 0.166 }); // Every 10 seconds
+function setupAlarm() {
+  chrome.alarms.clear('monitorPrices', () => {
+    chrome.alarms.create('monitorPrices', { periodInMinutes: interval });
+  });
+}
+
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'monitorPrices') {
     for (const url of Object.keys(items)) {
@@ -99,6 +123,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: false, message: 'Item not found.' });
     }
     return true; // Required to use sendResponse asynchronously
+  } else if (message.type === 'SET_INTERVAL') {
+    interval = parseFloat(message.interval);
+    setupAlarm();
+    sendResponse({ success: true });
+    return true;
   }
   return true; // Required to use sendResponse asynchronously
 });
