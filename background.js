@@ -1,10 +1,15 @@
 let items = {};
+let interval = 0.166; // Default interval in minutes (10 seconds)
 console.log('Service worker started.');
 
-// Load saved items on startup
-chrome.storage.local.get('items', (data) => {
+// Load saved items and interval on startup
+chrome.storage.local.get(['items', 'interval'], (data) => {
   if (data.items) {
     items = data.items;
+  }
+  if (data.interval) {
+    interval = parseFloat(data.interval);
+    setupAlarm();
   }
 });
 
@@ -74,7 +79,12 @@ async function monitorProduct(url) {
 }
 
 // Set up periodic monitoring
-chrome.alarms.create('monitorPrices', { periodInMinutes: 0.166 }); // Every 10 seconds
+function setupAlarm() {
+  chrome.alarms.clear('monitorPrices', () => {
+    chrome.alarms.create('monitorPrices', { periodInMinutes: interval });
+  });
+}
+
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'monitorPrices') {
     for (const url of Object.keys(items)) {
@@ -113,6 +123,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: false, message: 'Item not found.' });
     }
     return true; // Required to use sendResponse asynchronously
+  } else if (message.type === 'SET_INTERVAL') {
+    interval = parseFloat(message.interval);
+    setupAlarm();
+    sendResponse({ success: true });
+    return true;
   }
   return true; // Required to use sendResponse asynchronously
 });
